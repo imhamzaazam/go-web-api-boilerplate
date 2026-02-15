@@ -19,12 +19,21 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var testUserService *service.UserManager
+var testUserService *service.ServiceManager
 
 func TestMain(m *testing.M) {
 	ctx := context.Background()
 
 	utils.SetConfigFile("../../../../.env")
+	if os.Getenv("MIGRATION_URL") == "" {
+		os.Setenv("MIGRATION_URL", "file://db/postgres/migration")
+	}
+	if os.Getenv("DB_SOURCE") == "" {
+		os.Setenv("DB_SOURCE", "postgresql://pguser:pgpassword@localhost:5432/go_boilerplate?sslmode=disable")
+	}
+	if os.Getenv("TOKEN_SYMMETRIC_KEY") == "" {
+		os.Setenv("TOKEN_SYMMETRIC_KEY", "V7mQ9xL2pR8kN4tZc1Hf6Wb3sD0yJ5uA")
+	}
 	config := utils.GetConfig()
 
 	migrationsPath := filepath.Join("..", "..", "..", "..", "db", "postgres", "migration", "*.up.sql")
@@ -59,7 +68,7 @@ func TestMain(m *testing.M) {
 	}
 
 	testStore := pgsqlc.New(conn)
-	testUserService = service.NewUserManager(testStore)
+	testUserService = service.NewServiceManager(testStore)
 
 	os.Exit(m.Run())
 }

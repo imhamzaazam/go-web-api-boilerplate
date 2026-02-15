@@ -25,5 +25,14 @@ migratedown1:
 new_migration:
 	migrate create -ext sql -dir db/postgres/migration -seq $(name)
 
+openapi-ui:
+	docker run --rm -p 8081:8080 -e SWAGGER_JSON=/spec/openapi.yaml -v $(CURDIR)/docs:/spec swaggerapi/swagger-ui
+
+openapi-check:
+	docker run --rm -v $(CURDIR):/local openapitools/openapi-generator-cli validate -i /local/docs/openapi.yaml
+
+openapi-generate-client:
+	docker run --rm -v $(CURDIR):/local openapitools/openapi-generator-cli generate -i /local/docs/openapi.yaml -g typescript-fetch -o /local/generated/typescript-fetch
+
 .PHONY:
-	run build test sqlc migrateup migrateup1 migratedown migratedown1 new_migration 
+	run build test sqlc migrateup migrateup1 migratedown migratedown1 new_migration openapi-ui openapi-check openapi-generate-client

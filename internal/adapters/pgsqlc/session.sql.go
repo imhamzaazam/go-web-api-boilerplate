@@ -14,7 +14,8 @@ import (
 
 const createSession = `-- name: CreateSession :one
 INSERT INTO "session" (
-	"uid"
+	"tenant_id"
+	, "uid"
 	, "user_email"
 	, "refresh_token"
 	, "user_agent"
@@ -30,10 +31,12 @@ VALUES (
 	, $5
 	, $6
 	, $7
-	) RETURNING id, uid, user_email, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at
+	, $8
+	) RETURNING id, uid, user_email, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at, tenant_id
 `
 
 type CreateSessionParams struct {
+	TenantID     uuid.UUID
 	UID          uuid.UUID
 	UserEmail    string
 	RefreshToken string
@@ -45,6 +48,7 @@ type CreateSessionParams struct {
 
 func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error) {
 	row := q.db.QueryRow(ctx, createSession,
+		arg.TenantID,
 		arg.UID,
 		arg.UserEmail,
 		arg.RefreshToken,
@@ -64,18 +68,25 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (S
 		&i.IsBlocked,
 		&i.ExpiresAt,
 		&i.CreatedAt,
+		&i.TenantID,
 	)
 	return i, err
 }
 
-const getSession = `-- name: GetSession :one
-SELECT id, uid, user_email, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at
+const getSessionByTenant = `-- name: GetSessionByTenant :one
+SELECT id, uid, user_email, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at, tenant_id
 FROM "session"
-WHERE "uid" = $1 LIMIT 1
+WHERE "tenant_id" = $1
+	AND "uid" = $2 LIMIT 1
 `
 
-func (q *Queries) GetSession(ctx context.Context, uid uuid.UUID) (Session, error) {
-	row := q.db.QueryRow(ctx, getSession, uid)
+type GetSessionByTenantParams struct {
+	TenantID uuid.UUID
+	UID      uuid.UUID
+}
+
+func (q *Queries) GetSessionByTenant(ctx context.Context, arg GetSessionByTenantParams) (Session, error) {
+	row := q.db.QueryRow(ctx, getSessionByTenant, arg.TenantID, arg.UID)
 	var i Session
 	err := row.Scan(
 		&i.ID,
@@ -87,6 +98,7 @@ func (q *Queries) GetSession(ctx context.Context, uid uuid.UUID) (Session, error
 		&i.IsBlocked,
 		&i.ExpiresAt,
 		&i.CreatedAt,
+		&i.TenantID,
 	)
 	return i, err
 }

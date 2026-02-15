@@ -44,7 +44,7 @@ func main() {
 	}
 
 	store := pgsqlc.New(conn)
-	userService := services.NewUserManager(store)
+	userService := services.NewServiceManager(store)
 	server, err := httpV1.NewHTTPAdapter(userService)
 	if err != nil {
 		log.Err(err).Msg("error creating server")

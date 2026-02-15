@@ -11,6 +11,8 @@ import (
 	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/httputils"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/middleware"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/token"
+	v1admin "github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/v1/admin"
+	v1owner "github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/v1/owner"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/domainerr"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/ports"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/utils"
@@ -94,6 +96,38 @@ func (adapter *HTTPAdapter) setupRouter() {
 	v1Router := chi.NewRouter()
 	v1Router.Use(middleware.RequestID)
 	v1Router.Use(middleware.Logger)
+
+	adminWrap := func(handler v1admin.HandlerFunc) http.HandlerFunc {
+		return adapter.handlerWrapper(HandlerWrapper(handler))
+	}
+
+	ownerWrap := func(handler v1owner.HandlerFunc) http.HandlerFunc {
+		return adapter.handlerWrapper(HandlerWrapper(handler))
+	}
+
+	v1admin.RegisterRoutes(v1Router, adminWrap, v1admin.Handlers{
+		CreateTenant:       adapter.createTenant,
+		CreateBranch:       adapter.createBranch,
+		CreateSubscription: adapter.createSubscription,
+	})
+
+	v1Router.Group(func(r chi.Router) {
+		r.Use(middleware.Authentication(adapter.tokenMaker))
+		r.Use(adapter.tenantClaimsGuard)
+
+		v1owner.RegisterRoutes(r, ownerWrap, v1owner.Handlers{
+			CreateProduct:             adapter.createProduct,
+			CreateDiscount:            adapter.createDiscount,
+			CreateProductAddon:        adapter.createProductAddon,
+			UpsertInventoryForProduct: adapter.upsertInventoryForProduct,
+			CreateCartItem:            adapter.createCartItem,
+			CreateOrder:               adapter.createOrder,
+			UpdateOrderStatus:         adapter.updateOrderStatus,
+			CreatePaymentMethod:       adapter.createPaymentMethod,
+			ListPaymentMethods:        adapter.listPaymentMethods,
+			PayOrder:                  adapter.payOrder,
+		})
+	})
 
 	v1Router.Post("/users", adapter.handlerWrapper(adapter.createUser))
 	v1Router.Post("/login", adapter.handlerWrapper(adapter.loginUser))

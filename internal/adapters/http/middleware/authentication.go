@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -63,6 +64,13 @@ func Authentication(tokenMaker *token.PasetoMaker) func(next http.Handler) http.
 			if err != nil {
 				log.Info().Str("id", requestID).Str("error message", err.Error()).Msg("request error")
 				_ = httputils.Encode(w, r, http.StatusUnauthorized, err.HTTPErrorBody)
+				return
+			}
+
+			if payload.TenantID.String() == "00000000-0000-0000-0000-000000000000" || payload.TenantSlug == "" {
+				invalidClaimErr := domainerr.NewDomainError(http.StatusUnauthorized, domainerr.UnauthorizedError, "invalid tenant claims", errors.New("invalid tenant claims"))
+				log.Info().Str("id", requestID).Str("error message", invalidClaimErr.Error()).Msg("request error")
+				_ = httputils.Encode(w, r, http.StatusUnauthorized, invalidClaimErr.HTTPErrorBody)
 				return
 			}
 
