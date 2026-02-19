@@ -1,6 +1,7 @@
 -- name: CreateSession :one
 INSERT INTO "session" (
-	"uid"
+	"tenant_id"
+	, "uid"
 	, "user_email"
 	, "refresh_token"
 	, "user_agent"
@@ -16,9 +17,11 @@ VALUES (
 	, $5
 	, $6
 	, $7
+	, $8
 	) RETURNING *;
 
--- name: GetSession :one
+-- name: GetSessionByTenant :one
 SELECT *
 FROM "session"
-WHERE "uid" = $1 LIMIT 1;
+WHERE "tenant_id" = $1
+	AND "uid" = $2 LIMIT 1;

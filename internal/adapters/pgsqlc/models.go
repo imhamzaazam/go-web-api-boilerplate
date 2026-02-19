@@ -5,10 +5,459 @@
 package pgsqlc
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type DiscountType string
+
+const (
+	DiscountTypePercentage DiscountType = "percentage"
+)
+
+func (e *DiscountType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DiscountType(s)
+	case string:
+		*e = DiscountType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DiscountType: %T", src)
+	}
+	return nil
+}
+
+type NullDiscountType struct {
+	DiscountType DiscountType
+	Valid        bool // Valid is true if DiscountType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDiscountType) Scan(value interface{}) error {
+	if value == nil {
+		ns.DiscountType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DiscountType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDiscountType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DiscountType), nil
+}
+
+type FulfillmentType string
+
+const (
+	FulfillmentTypePickup   FulfillmentType = "pickup"
+	FulfillmentTypeDelivery FulfillmentType = "delivery"
+)
+
+func (e *FulfillmentType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = FulfillmentType(s)
+	case string:
+		*e = FulfillmentType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for FulfillmentType: %T", src)
+	}
+	return nil
+}
+
+type NullFulfillmentType struct {
+	FulfillmentType FulfillmentType
+	Valid           bool // Valid is true if FulfillmentType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullFulfillmentType) Scan(value interface{}) error {
+	if value == nil {
+		ns.FulfillmentType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.FulfillmentType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullFulfillmentType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.FulfillmentType), nil
+}
+
+type OrderStatus string
+
+const (
+	OrderStatusPending        OrderStatus = "pending"
+	OrderStatusConfirmed      OrderStatus = "confirmed"
+	OrderStatusCancelled      OrderStatus = "cancelled"
+	OrderStatusOutForDelivery OrderStatus = "out_for_delivery"
+	OrderStatusCompleted      OrderStatus = "completed"
+	OrderStatusRefunded       OrderStatus = "refunded"
+)
+
+func (e *OrderStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OrderStatus(s)
+	case string:
+		*e = OrderStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OrderStatus: %T", src)
+	}
+	return nil
+}
+
+type NullOrderStatus struct {
+	OrderStatus OrderStatus
+	Valid       bool // Valid is true if OrderStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrderStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.OrderStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OrderStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrderStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OrderStatus), nil
+}
+
+type PaymentMethodType string
+
+const (
+	PaymentMethodTypeCash PaymentMethodType = "cash"
+	PaymentMethodTypeCard PaymentMethodType = "card"
+)
+
+func (e *PaymentMethodType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentMethodType(s)
+	case string:
+		*e = PaymentMethodType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentMethodType: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentMethodType struct {
+	PaymentMethodType PaymentMethodType
+	Valid             bool // Valid is true if PaymentMethodType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentMethodType) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentMethodType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentMethodType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentMethodType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentMethodType), nil
+}
+
+type SubscriptionStatus string
+
+const (
+	SubscriptionStatusTrial     SubscriptionStatus = "trial"
+	SubscriptionStatusActive    SubscriptionStatus = "active"
+	SubscriptionStatusPastDue   SubscriptionStatus = "past_due"
+	SubscriptionStatusSuspended SubscriptionStatus = "suspended"
+	SubscriptionStatusCanceled  SubscriptionStatus = "canceled"
+)
+
+func (e *SubscriptionStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = SubscriptionStatus(s)
+	case string:
+		*e = SubscriptionStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for SubscriptionStatus: %T", src)
+	}
+	return nil
+}
+
+type NullSubscriptionStatus struct {
+	SubscriptionStatus SubscriptionStatus
+	Valid              bool // Valid is true if SubscriptionStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSubscriptionStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.SubscriptionStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.SubscriptionStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSubscriptionStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.SubscriptionStatus), nil
+}
+
+type TenantType string
+
+const (
+	TenantTypeBakery     TenantType = "bakery"
+	TenantTypePharmacy   TenantType = "pharmacy"
+	TenantTypeRestaurant TenantType = "restaurant"
+)
+
+func (e *TenantType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = TenantType(s)
+	case string:
+		*e = TenantType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for TenantType: %T", src)
+	}
+	return nil
+}
+
+type NullTenantType struct {
+	TenantType TenantType
+	Valid      bool // Valid is true if TenantType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullTenantType) Scan(value interface{}) error {
+	if value == nil {
+		ns.TenantType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.TenantType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullTenantType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.TenantType), nil
+}
+
+type UserRole string
+
+const (
+	UserRoleOwner    UserRole = "owner"
+	UserRoleAdmin    UserRole = "admin"
+	UserRoleEmployee UserRole = "employee"
+)
+
+func (e *UserRole) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = UserRole(s)
+	case string:
+		*e = UserRole(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UserRole: %T", src)
+	}
+	return nil
+}
+
+type NullUserRole struct {
+	UserRole UserRole
+	Valid    bool // Valid is true if UserRole is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullUserRole) Scan(value interface{}) error {
+	if value == nil {
+		ns.UserRole, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.UserRole.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullUserRole) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.UserRole), nil
+}
+
+type Branch struct {
+	ID         uuid.UUID
+	TenantID   uuid.UUID
+	Name       string
+	Code       string
+	CreatedAt  time.Time
+	ModifiedAt time.Time
+	DeletedAt  time.Time
+}
+
+type Cart struct {
+	ID         uuid.UUID
+	TenantID   uuid.UUID
+	UserUid    uuid.UUID
+	IsActive   bool
+	CreatedAt  time.Time
+	ModifiedAt time.Time
+}
+
+type CartItem struct {
+	ID              uuid.UUID
+	TenantID        uuid.UUID
+	CartID          uuid.UUID
+	ProductID       uuid.UUID
+	Quantity        int32
+	UnitPrice       int64
+	VatPercent      pgtype.Numeric
+	Note            pgtype.Text
+	PrescriptionRef pgtype.Text
+	CreatedAt       time.Time
+	ModifiedAt      time.Time
+	DeletedAt       time.Time
+}
+
+type CartItemAddon struct {
+	ID         uuid.UUID
+	TenantID   uuid.UUID
+	CartItemID uuid.UUID
+	AddonID    uuid.UUID
+	Quantity   int32
+}
+
+type Discount struct {
+	ID         uuid.UUID
+	TenantID   uuid.UUID
+	ProductID  uuid.UUID
+	Code       string
+	Name       string
+	Type       DiscountType
+	Value      pgtype.Numeric
+	StartsAt   time.Time
+	EndsAt     time.Time
+	CreatedAt  time.Time
+	ModifiedAt time.Time
+	DeletedAt  time.Time
+}
+
+type Inventory struct {
+	ID         uuid.UUID
+	TenantID   uuid.UUID
+	ProductID  uuid.UUID
+	InStock    int32
+	Reserved   int32
+	CreatedAt  time.Time
+	ModifiedAt time.Time
+}
+
+type Order struct {
+	ID                  uuid.UUID
+	TenantID            uuid.UUID
+	UserUid             uuid.UUID
+	BranchID            uuid.UUID
+	CartID              uuid.UUID
+	Status              OrderStatus
+	FulfillmentType     FulfillmentType
+	DeliveryAddressLine pgtype.Text
+	DeliveryCity        pgtype.Text
+	DeliveryLat         pgtype.Numeric
+	DeliveryLng         pgtype.Numeric
+	Subtotal            int64
+	Tax                 int64
+	Total               int64
+	PaymentMethodID     uuid.UUID
+	PaidAt              time.Time
+	CancelledAt         time.Time
+	RefundedAt          time.Time
+	CreatedAt           time.Time
+	ModifiedAt          time.Time
+	DeletedAt           time.Time
+}
+
+type OrderItem struct {
+	ID              uuid.UUID
+	TenantID        uuid.UUID
+	OrderID         uuid.UUID
+	ProductID       uuid.UUID
+	Quantity        int32
+	UnitPrice       int64
+	VatPercent      pgtype.Numeric
+	LineTotal       int64
+	Note            pgtype.Text
+	PrescriptionRef pgtype.Text
+	CreatedAt       time.Time
+}
+
+type PaymentMethod struct {
+	ID         uuid.UUID
+	TenantID   uuid.UUID
+	Type       PaymentMethodType
+	Label      string
+	IsDefault  bool
+	CreatedAt  time.Time
+	ModifiedAt time.Time
+	DeletedAt  time.Time
+}
+
+type Product struct {
+	ID                   uuid.UUID
+	TenantID             uuid.UUID
+	Name                 string
+	Sku                  string
+	Price                int64
+	VatPercent           pgtype.Numeric
+	IsPreorder           bool
+	MadeToOrder          bool
+	RequiresPrescription bool
+	AvailableForDelivery bool
+	AvailableForPickup   bool
+	CreatedAt            time.Time
+	ModifiedAt           time.Time
+	DeletedAt            time.Time
+}
+
+type ProductAddon struct {
+	ID         uuid.UUID
+	TenantID   uuid.UUID
+	ProductID  uuid.UUID
+	Name       string
+	Price      int64
+	CreatedAt  time.Time
+	ModifiedAt time.Time
+	DeletedAt  time.Time
+}
 
 type Session struct {
 	ID           int64
@@ -20,6 +469,30 @@ type Session struct {
 	IsBlocked    bool
 	ExpiresAt    time.Time
 	CreatedAt    time.Time
+	TenantID     uuid.UUID
+}
+
+type Subscription struct {
+	ID         uuid.UUID
+	TenantID   uuid.UUID
+	Plan       string
+	Status     SubscriptionStatus
+	StartsAt   time.Time
+	EndsAt     time.Time
+	CreatedAt  time.Time
+	ModifiedAt time.Time
+	DeletedAt  time.Time
+}
+
+type Tenant struct {
+	ID         uuid.UUID
+	Name       string
+	Slug       string
+	CreatedAt  time.Time
+	ModifiedAt time.Time
+	Domain     string
+	Type       TenantType
+	DeletedAt  time.Time
 }
 
 type User struct {
@@ -33,4 +506,8 @@ type User struct {
 	LastLogin  time.Time
 	CreatedAt  time.Time
 	ModifiedAt time.Time
+	TenantID   uuid.UUID
+	Role       UserRole
+	BranchID   uuid.UUID
+	DeletedAt  time.Time
 }

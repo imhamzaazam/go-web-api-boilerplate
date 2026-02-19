@@ -14,7 +14,9 @@ import (
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO "user" (
-	"email"
+	"tenant_id"
+	, "role"
+	, "email"
 	, "password"
 	, "full_name"
 	, "is_staff"
@@ -28,7 +30,10 @@ VALUES (
 	, $4
 	, $5
 	, $6
+	, $7
+	, $8
 	) RETURNING "uid"
+	, "tenant_id"
 	, "email"
 	, "full_name"
 	, "created_at"
@@ -36,6 +41,8 @@ VALUES (
 `
 
 type CreateUserParams struct {
+	TenantID  uuid.UUID
+	Role      UserRole
 	Email     string
 	Password  string
 	FullName  string
@@ -46,6 +53,7 @@ type CreateUserParams struct {
 
 type CreateUserRow struct {
 	UID        uuid.UUID
+	TenantID   uuid.UUID
 	Email      string
 	FullName   string
 	CreatedAt  time.Time
@@ -54,6 +62,8 @@ type CreateUserRow struct {
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
 	row := q.db.QueryRow(ctx, createUser,
+		arg.TenantID,
+		arg.Role,
 		arg.Email,
 		arg.Password,
 		arg.FullName,
@@ -64,6 +74,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 	var i CreateUserRow
 	err := row.Scan(
 		&i.UID,
+		&i.TenantID,
 		&i.Email,
 		&i.FullName,
 		&i.CreatedAt,
@@ -72,17 +83,54 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 	return i, err
 }
 
-const getUser = `-- name: GetUser :one
-SELECT id, uid, email, password, full_name, is_staff, is_active, last_login, created_at, modified_at
+const getUserByTenantAndEmail = `-- name: GetUserByTenantAndEmail :one
+SELECT
+	"id",
+	"tenant_id",
+	"role",
+	"uid",
+	"email",
+	"password",
+	"full_name",
+	"is_staff",
+	"is_active",
+	COALESCE("last_login", CURRENT_TIMESTAMP) AS "last_login",
+	"created_at",
+	"modified_at"
 FROM "user"
-WHERE "email" = $1 LIMIT 1
+WHERE "tenant_id" = $1
+	AND "email" = $2
+	AND "deleted_at" IS NULL
+LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
-	row := q.db.QueryRow(ctx, getUser, email)
-	var i User
+type GetUserByTenantAndEmailParams struct {
+	TenantID uuid.UUID
+	Email    string
+}
+
+type GetUserByTenantAndEmailRow struct {
+	ID         int64
+	TenantID   uuid.UUID
+	Role       UserRole
+	UID        uuid.UUID
+	Email      string
+	Password   string
+	FullName   string
+	IsStaff    bool
+	IsActive   bool
+	LastLogin  time.Time
+	CreatedAt  time.Time
+	ModifiedAt time.Time
+}
+
+func (q *Queries) GetUserByTenantAndEmail(ctx context.Context, arg GetUserByTenantAndEmailParams) (GetUserByTenantAndEmailRow, error) {
+	row := q.db.QueryRow(ctx, getUserByTenantAndEmail, arg.TenantID, arg.Email)
+	var i GetUserByTenantAndEmailRow
 	err := row.Scan(
 		&i.ID,
+		&i.TenantID,
+		&i.Role,
 		&i.UID,
 		&i.Email,
 		&i.Password,
@@ -96,17 +144,54 @@ func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 	return i, err
 }
 
-const getUserByUID = `-- name: GetUserByUID :one
-SELECT id, uid, email, password, full_name, is_staff, is_active, last_login, created_at, modified_at
+const getUserByTenantAndUID = `-- name: GetUserByTenantAndUID :one
+SELECT
+	"id",
+	"tenant_id",
+	"role",
+	"uid",
+	"email",
+	"password",
+	"full_name",
+	"is_staff",
+	"is_active",
+	COALESCE("last_login", CURRENT_TIMESTAMP) AS "last_login",
+	"created_at",
+	"modified_at"
 FROM "user"
-WHERE "uid" = $1 LIMIT 1
+WHERE "tenant_id" = $1
+	AND "uid" = $2
+	AND "deleted_at" IS NULL
+LIMIT 1
 `
 
-func (q *Queries) GetUserByUID(ctx context.Context, uid uuid.UUID) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByUID, uid)
-	var i User
+type GetUserByTenantAndUIDParams struct {
+	TenantID uuid.UUID
+	UID      uuid.UUID
+}
+
+type GetUserByTenantAndUIDRow struct {
+	ID         int64
+	TenantID   uuid.UUID
+	Role       UserRole
+	UID        uuid.UUID
+	Email      string
+	Password   string
+	FullName   string
+	IsStaff    bool
+	IsActive   bool
+	LastLogin  time.Time
+	CreatedAt  time.Time
+	ModifiedAt time.Time
+}
+
+func (q *Queries) GetUserByTenantAndUID(ctx context.Context, arg GetUserByTenantAndUIDParams) (GetUserByTenantAndUIDRow, error) {
+	row := q.db.QueryRow(ctx, getUserByTenantAndUID, arg.TenantID, arg.UID)
+	var i GetUserByTenantAndUIDRow
 	err := row.Scan(
 		&i.ID,
+		&i.TenantID,
+		&i.Role,
 		&i.UID,
 		&i.Email,
 		&i.Password,

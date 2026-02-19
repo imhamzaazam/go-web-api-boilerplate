@@ -127,7 +127,12 @@ func TestLoginUser(t *testing.T) {
 		password:  utils.RandomString(6),
 	}
 
+	tenantCtx, tenantErr := testUserService.ResolveTenantContext(context.Background(), "default.localhost")
+	require.Nil(t, tenantErr)
+
 	_, err := testUserService.CreateUser(context.Background(), ports.NewUser{
+		TenantID: tenantCtx.TenantID,
+		Role:     "employee",
 		FullName: user.full_name,
 		Email:    user.email,
 		Password: user.password,

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/aead/chacha20poly1305"
+	"github.com/google/uuid"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/domainerr"
 	"github.com/o1egl/paseto"
 )
@@ -28,8 +29,8 @@ func NewPasetoMaker(symmetricKey string) (*PasetoMaker, error) {
 	return maker, nil
 }
 
-func (maker *PasetoMaker) CreateToken(email string, role string, duration time.Duration) (string, *Payload, *domainerr.DomainError) {
-	payload, payloadErr := NewPayload(email, role, duration)
+func (maker *PasetoMaker) CreateToken(tenantID uuid.UUID, tenantSlug string, subscriptionStatus string, email string, role string, duration time.Duration) (string, *Payload, *domainerr.DomainError) {
+	payload, payloadErr := NewPayload(tenantID, tenantSlug, subscriptionStatus, email, role, duration)
 	if payloadErr != nil {
 		return "", payload, payloadErr
 	}

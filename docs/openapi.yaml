@@ -1,0 +1,973 @@
+openapi: 3.0.3
+info:
+  title: Go Web API Boilerplate
+  version: 1.0.0
+  description: OpenAPI specification for the v1 HTTP API.
+servers:
+  - url: http://localhost:8080/api/v1
+tags:
+  - name: Auth
+  - name: Users
+  - name: Tenants
+  - name: Products
+  - name: Cart
+  - name: Inventory
+  - name: Orders
+  - name: Payments
+paths:
+  /tenants:
+    post:
+      tags: [Tenants]
+      summary: Create tenant
+      operationId: createTenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantRequest'
+      responses:
+        '201':
+          description: Tenant created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTenantResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /branches:
+    post:
+      tags: [Tenants]
+      summary: Create branch
+      operationId: createBranch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBranchRequest'
+      responses:
+        '201':
+          description: Branch created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateBranchResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /subscriptions:
+    post:
+      tags: [Tenants]
+      summary: Create subscription
+      operationId: createSubscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionRequest'
+      responses:
+        '201':
+          description: Subscription created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSubscriptionResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /products:
+    post:
+      tags: [Products]
+      summary: Create product
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateProductResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /products/{id}/discounts:
+    post:
+      tags: [Products]
+      summary: Create product discount
+      operationId: createDiscount
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Product UUID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDiscountRequest'
+      responses:
+        '201':
+          description: Discount created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDiscountResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /products/{id}/addons:
+    post:
+      tags: [Products]
+      summary: Create product add-on
+      operationId: createProductAddon
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Product UUID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductAddonRequest'
+      responses:
+        '201':
+          description: Add-on created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateProductAddonResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /inventory/{id}:
+    put:
+      tags: [Inventory]
+      summary: Set inventory stock for product
+      operationId: upsertInventoryForProduct
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Product UUID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertInventoryRequest'
+      responses:
+        '200':
+          description: Inventory updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpsertInventoryResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /cart/items:
+    post:
+      tags: [Cart]
+      summary: Add item to active cart
+      operationId: createCartItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCartItemRequest'
+      responses:
+        '200':
+          description: Cart item created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateCartItemResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /orders:
+    post:
+      tags: [Orders]
+      summary: Create order from active cart
+      operationId: createOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '402':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /orders/{id}/status:
+    patch:
+      tags: [Orders]
+      summary: Update order status
+      operationId: updateOrderStatus
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Order UUID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrderStatusRequest'
+      responses:
+        '200':
+          description: Order status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /payment-methods:
+    post:
+      tags: [Payments]
+      summary: Create payment method
+      operationId: createPaymentMethod
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentMethodRequest'
+      responses:
+        '201':
+          description: Payment method created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethodResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+    get:
+      tags: [Payments]
+      summary: List payment methods
+      operationId: listPaymentMethods
+      responses:
+        '200':
+          description: Payment methods listed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentMethodResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /orders/{id}/pay:
+    post:
+      tags: [Payments]
+      summary: Pay order
+      operationId: payOrder
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Order UUID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayOrderRequest'
+      responses:
+        '200':
+          description: Order paid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayOrderResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '402':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /users:
+    post:
+      tags: [Users]
+      summary: Create user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /login:
+    post:
+      tags: [Auth]
+      summary: Login user
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /renew-token:
+    post:
+      tags: [Auth]
+      summary: Renew access token
+      operationId: renewAccessToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenewTokenRequest'
+      responses:
+        '200':
+          description: Access token renewed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RenewTokenResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /user/{uid}:
+    get:
+      tags: [Users]
+      summary: Get user by UID
+      operationId: getUserByUID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          description: User UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: PASETO
+
+  responses:
+    ErrorResponse:
+      description: API error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    CreateTenantRequest:
+      type: object
+      required: [name, slug, domain, type]
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        domain:
+          type: string
+        type:
+          type: string
+          enum: [bakery, pharmacy, restaurant]
+
+    CreateTenantResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        domain:
+          type: string
+        type:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    CreateBranchRequest:
+      type: object
+      required: [tenant_id, name, code]
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type: string
+
+    CreateBranchResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type: string
+
+    CreateSubscriptionRequest:
+      type: object
+      required: [tenant_id, plan, status]
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        plan:
+          type: string
+        status:
+          type: string
+          enum: [trial, active, past_due, suspended, canceled]
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+
+    CreateSubscriptionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        plan:
+          type: string
+        status:
+          type: string
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+
+    CreateProductRequest:
+      type: object
+      required: [name, sku, price, vat_percent]
+      properties:
+        name:
+          type: string
+        sku:
+          type: string
+        price:
+          type: integer
+          format: int64
+        vat_percent:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+        is_preorder:
+          type: boolean
+        made_to_order:
+          type: boolean
+          description: Only allowed for bakery tenants.
+        requires_prescription:
+          type: boolean
+        available_for_delivery:
+          type: boolean
+        available_for_pickup:
+          type: boolean
+
+    CreateProductResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        sku:
+          type: string
+        price:
+          type: integer
+          format: int64
+
+    CreateDiscountRequest:
+      type: object
+      required: [code, name, type, value, starts_at, ends_at]
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [percentage]
+        value:
+          type: number
+          format: double
+          minimum: 1
+          maximum: 100
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+
+    CreateDiscountResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        value:
+          type: number
+          format: double
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+
+    CreateProductAddonRequest:
+      type: object
+      required: [name, price]
+      properties:
+        name:
+          type: string
+        price:
+          type: integer
+          format: int64
+
+    CreateProductAddonResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        price:
+          type: integer
+          format: int64
+
+    UpsertInventoryRequest:
+      type: object
+      required: [in_stock]
+      properties:
+        in_stock:
+          type: integer
+          format: int32
+          minimum: 0
+
+    UpsertInventoryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        in_stock:
+          type: integer
+          format: int32
+        reserved:
+          type: integer
+          format: int32
+
+    CreateCartItemRequest:
+      type: object
+      required: [user_uid, product_id, quantity]
+      properties:
+        user_uid:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+        note:
+          type: string
+        prescription_ref:
+          type: string
+
+    CreateCartItemResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        cart_id:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+          format: int32
+        unit_price:
+          type: integer
+          format: int64
+
+    CreateOrderLocation:
+      type: object
+      properties:
+        address_line:
+          type: string
+        city:
+          type: string
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+
+    CreateOrderRequest:
+      type: object
+      required: [cart_id, payment_method_id, fulfillment_type]
+      properties:
+        cart_id:
+          type: string
+          format: uuid
+        payment_method_id:
+          type: string
+          description: Use "cash" or a payment method UUID.
+        fulfillment_type:
+          type: string
+          enum: [pickup, delivery]
+        location:
+          $ref: '#/components/schemas/CreateOrderLocation'
+
+    OrderResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        cart_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, out_for_delivery, completed, refunded]
+        fulfillment_type:
+          type: string
+          enum: [pickup, delivery]
+        subtotal:
+          type: integer
+          format: int64
+        tax:
+          type: integer
+          format: int64
+        total:
+          type: integer
+          format: int64
+
+    UpdateOrderStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, out_for_delivery, completed, refunded]
+
+    CreatePaymentMethodRequest:
+      type: object
+      required: [type, label]
+      properties:
+        type:
+          type: string
+          enum: [cash, card]
+        label:
+          type: string
+        is_default:
+          type: boolean
+
+    PaymentMethodResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Returns "cash" for default cash method, otherwise UUID string.
+        type:
+          type: string
+          enum: [cash, card]
+        label:
+          type: string
+        is_default:
+          type: boolean
+
+    PayOrderRequest:
+      type: object
+      required: [payment_method_id, amount]
+      properties:
+        payment_method_id:
+          type: string
+          description: Use "cash" or a payment method UUID.
+        amount:
+          type: integer
+          format: int64
+          minimum: 1
+
+    PayOrderResponse:
+      type: object
+      properties:
+        order_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, out_for_delivery, completed, refunded]
+
+    CreateUserRequest:
+      type: object
+      required: [full_name, email, password]
+      properties:
+        full_name:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        password:
+          type: string
+          format: password
+          example: yourSecurePassword
+
+    UserResponse:
+      type: object
+      properties:
+        uid:
+          type: string
+          format: uuid
+          example: eb01f6d3-b964-4bdc-be66-a40c95378480
+        full_name:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        password:
+          type: string
+          format: password
+          example: yourSecurePassword
+
+    LoginResponse:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        access_token:
+          type: string
+          example: v2.local....
+        refresh_token:
+          type: string
+          example: v2.local....
+        access_token_expires_at:
+          type: string
+          format: date-time
+        refresh_token_expires_at:
+          type: string
+          format: date-time
+
+    RenewTokenRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token:
+          type: string
+          example: v2.local....
+
+    RenewTokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: v2.local....
+        access_token_expires_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: auth/unauthorized
+        errors:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+            - type: object
+              additionalProperties: true

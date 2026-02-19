@@ -23,3 +23,28 @@ Just writing some golang with things that I like to see in a Web API
 - golang-migrate
 - docker
 - sqlc
+
+## OpenAPI (direct API calling)
+
+- Spec file: `docs/openapi.yaml`
+- Validate spec:
+
+```bash
+make openapi-check
+```
+
+- Start Swagger UI (Try it Out):
+
+```bash
+make openapi-ui
+```
+
+Open http://localhost:8081 and call endpoints directly from the browser.
+
+- Generate API client SDK:
+
+```bash
+make openapi-generate-client
+```
+
+Generated client path: `generated/typescript-fetch`
